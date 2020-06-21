@@ -1,5 +1,5 @@
 import React,{Component} from 'react';
-import { Breadcrumb, BreadcrumbItem,Button,Form,Input,FormGroup,Label,Col} from 'reactstrap';
+import { Breadcrumb, BreadcrumbItem,Button,Form,Input,FormGroup,FormFeedback,Label,Col} from 'reactstrap';
 import { Link } from 'react-router-dom';
 
 class Contact extends Component {
@@ -13,10 +13,18 @@ class Contact extends Component {
             email: '',
             agree: false,
             contactType: 'Tel.',
-            message: ''
+            message: '',
+            touched:{
+                firstname:false,
+                lastname:false,
+                telnum:false,
+                email:false
+
+            }
         }
         this.handleSubmit=this.handleSubmit.bind(this);
         this.handleInputChange=this.handleInputChange.bind(this);
+        this.handleBlur=this.handleBlur.bind(this);
     }
 
     handleInputChange(event) {
@@ -37,9 +45,43 @@ class Contact extends Component {
         event.preventDefault();
     }
 
+    handleBlur=(field) => (evt) => {
+        this.setState({
+            touched:{...this.state.touched,[field]:true}
+        })
+    }
+
+    validate(firstname,lastname,telnum,email){
+        const errors={
+            firstname:'',
+            lastname:'',
+            telnum:'',
+            email:''
+        }
+
+        if(this.state.touched.firstname && (firstname.length < 3 || firstname.length >10)){
+            errors.firstname='Firstname should be between 3 to 10 characters';
+        }
+        if(this.state.touched.lastname && (lastname.length < 3 || lastname.length >10)){
+            errors.lastname='Lastname should be between 3 to 10 characters';
+        }
+        const reg=/^\d{10}$/;
+        if(this.state.touched.telnum && !reg.test(telnum))
+            errors.telnum='Tel.No should be all numbers and 10 digits';
+        const reg1 =/^([a-z 0-9 \. -]+)@([a-z 0-9 -]+).([a-z {2,8}])(.[a-z {2,8}])?$/
+        if(this.state.touched.email && !reg1.test(email)) 
+            errors.email='Email should follow this format : abc@xyz.pqr';
+
+        return errors;
+
+    }
+
     render(){
 
+        const errors = this.validate(this.state.firstname,this.state.lastname,this.state.telnum,this.state.email)
+
         return(
+        
             <div className="container">
                 <div className="row">
                     <Breadcrumb>
@@ -89,7 +131,11 @@ class Contact extends Component {
                                     <Input type="text" id="firstname" name="firstname"
                                         placeholder="First Name"
                                         value={this.state.firstname}
+                                        
+                                        invalid={errors.firstname !== ''}
+                                        onBlur={this.handleBlur('firstname')}
                                         onChange={this.handleInputChange} />
+                                    <FormFeedback>{errors.firstname}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
@@ -98,16 +144,24 @@ class Contact extends Component {
                                     <Input type="text" id="lastname" name="lastname"
                                         placeholder="Last Name"
                                         value={this.state.lastname}
+                                        
+                                        invalid={errors.lastname !== ''}
+                                        onBlur={this.handleBlur('lastname')}
                                         onChange={this.handleInputChange} />
-                                </Col>                        
+                                    <FormFeedback>{errors.lastname}</FormFeedback>
+                                </Col>
                             </FormGroup>
                             <FormGroup row>
-                            <Label htmlFor="telnum" md={2}>Contact Tel.</Label>
+                                <Label htmlFor="telnum" md={2}>Contact Tel.</Label>
                                 <Col md={10}>
                                     <Input type="tel" id="telnum" name="telnum"
-                                        placeholder="Tel. number"
+                                        placeholder="Tel. Number"
                                         value={this.state.telnum}
+                                        
+                                        invalid={errors.telnum !== ''}
+                                        onBlur={this.handleBlur('telnum')}
                                         onChange={this.handleInputChange} />
+                                    <FormFeedback>{errors.telnum}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
@@ -116,7 +170,11 @@ class Contact extends Component {
                                     <Input type="email" id="email" name="email"
                                         placeholder="Email"
                                         value={this.state.email}
+                                        
+                                        invalid={errors.email !== ''}
+                                        onBlur={this.handleBlur('email')}
                                         onChange={this.handleInputChange} />
+                                    <FormFeedback>{errors.email}</FormFeedback>
                                 </Col>
                             </FormGroup>
                             <FormGroup row>
